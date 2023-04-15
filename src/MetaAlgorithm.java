@@ -15,8 +15,9 @@ import java.util.concurrent.ThreadLocalRandom;
         4. Find a proper list coloring of the conflict graph, given color sample L(v) for each vertex v
     It therefore makes sense to have both inherit from this interface and implement each unspecified step themselves
  */
-public abstract class MetaAlgorithm {
 
+public abstract class MetaAlgorithm {
+    // Index i contains list of colors sampled by vertex i
     protected List<Set<Long>> sampleColors(long vertices, long delta, long colors_sampled) {
         List<Set<Long>> color_samples = new ArrayList<>();
         color_samples.add(null); // for 1-indexing
@@ -42,6 +43,7 @@ public abstract class MetaAlgorithm {
         return color_samples;
     }
 
+    // Index i contains vertices which sample color i
     protected List<Set<Long>> calculateChiSets(long delta, List<Set<Long>> color_samples) {
         List<Set<Long>> chi_sets = new ArrayList<>();
         chi_sets.add(null);
