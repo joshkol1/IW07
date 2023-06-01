@@ -4,36 +4,40 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 public class SublinearSpace extends MetaAlgorithm {
     private final long numVertices;
-    private final long delta; // Max degree of graph
+    private final long maxDegree;
     private final double epsilon; // Parameter for HSS decomposition & # colors leading constant
     private final double alpha; // necessary for sparse vertex coloring
     private final long numColorsSampled; // O(alpha/epsilon^2 log n) in paper
     private final List<Set<Long>> sampledColors; // Index i: colors sampled by vertex i
     private final List<Set<Long>> chiSets; // Index i: vertices which sample color i
     private final long kValue; // O(log^2 n) in the paper, for conflict graph construction
+    private final HashMap<Long, List<Pair<Long, Long>>> edgeSlots;
     private List<kEdgeSampler> conflictEdgeSamplers; // conflict edge sampler for each vertex
     private Graph<Long, DefaultEdge> conflictGraph; // Constructed at end of stream with edge samplers
 
-    public SublinearSpace(long num_vertices, long delta, double epsilon, double alpha, long num_colors_sampled, long k_value) {
+    public SublinearSpace(long num_vertices, long max_degree, double epsilon, double alpha, long num_colors_sampled, long k_value) {
         this.numVertices = num_vertices;
-        this.delta = delta;
+        this.maxDegree = max_degree;
         this.epsilon = epsilon;
         this.alpha = alpha;
         this.numColorsSampled = num_colors_sampled;
         this.kValue = k_value;
+        this.edgeSlots = new HashMap<>();
         // First, sample colors & calculate vertices which sample each color
-        this.sampledColors = sampleColors(this.numVertices, this.delta, this.numColorsSampled);
-        this.chiSets = calculateChiSets(this.delta, this.sampledColors);
+        this.sampledColors = sampleColors(this.numVertices, this.maxDegree, this.numColorsSampled);
+        this.chiSets = calculateChiSets(this.maxDegree, this.sampledColors);
         // Now follow steps in lemma 4.3 to get conflict graph edge samplers
         conflictEdgeSamplers = new ArrayList<>();
         conflictEdgeSamplers.add(null);
         for(long vertex = 1; vertex <= numVertices; ++vertex) {
             List<Pair<Long, Long>> edge_slots = calculateEdgeSlots(vertex);
+            this.edgeSlots.put(vertex, edge_slots);
             conflictEdgeSamplers.add(new kEdgeSampler(edge_slots, this.kValue));
         }
     }

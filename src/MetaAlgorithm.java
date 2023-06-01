@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class MetaAlgorithm {
     // Index i contains list of colors sampled by vertex i
-    protected List<Set<Long>> sampleColors(long vertices, long delta, long colors_sampled) {
+    protected List<Set<Long>> sampleColors(long vertices, long max_degree, long colors_sampled) {
         List<Set<Long>> color_samples = new ArrayList<>();
         color_samples.add(null); // for 1-indexing
         // Use algorithm L for reservoir sampling
@@ -31,9 +31,9 @@ public abstract class MetaAlgorithm {
             }
             double W = Math.exp(Math.log(ThreadLocalRandom.current().nextDouble())/colors_sampled);
             long i = colors_sampled;
-            while(i <= delta+1) {
+            while(i <= max_degree+1) {
                 i += Math.floor(Math.log(ThreadLocalRandom.current().nextDouble())/Math.log(1-W)) + 1;
-                if(i <= delta+1) {
+                if(i <= max_degree+1) {
                     v_sample.set(ThreadLocalRandom.current().nextInt(v_sample.size()), i);
                     W *= Math.exp(Math.log(ThreadLocalRandom.current().nextDouble())/colors_sampled);
                 }
@@ -44,10 +44,10 @@ public abstract class MetaAlgorithm {
     }
 
     // Index i contains vertices which sample color i
-    protected List<Set<Long>> calculateChiSets(long delta, List<Set<Long>> color_samples) {
+    protected List<Set<Long>> calculateChiSets(long max_degree, List<Set<Long>> color_samples) {
         List<Set<Long>> chi_sets = new ArrayList<>();
         chi_sets.add(null);
-        for(long c = 1; c <= delta+1; ++c) {
+        for(long c = 1; c <= max_degree+1; ++c) {
             chi_sets.add(new HashSet<>());
         }
         for(long v = 1; v < color_samples.size(); ++v) {
